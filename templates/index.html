@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Sentiment Predictor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 0 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #00d2ff, #7b2ff7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #aaa;
+      font-size: 1rem;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    /* Select */
+    .select-section {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .select-section label {
+      font-size: 1rem;
+      color: #ccc;
+      min-width: 120px;
+    }
+    select {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      cursor: pointer;
+    }
+    select option { background: #302b63; color: white; }
+
+    /* Button */
+    .predict-btn {
+      padding: 12px 35px;
+      background: linear-gradient(90deg, #00d2ff, #7b2ff7);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .predict-btn:hover  { transform: scale(1.03); opacity: 0.9; }
+    .predict-btn:active { transform: scale(0.98); }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #aaa;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top: 3px solid #00d2ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result */
+    .result-section { display: none; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .result-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+    }
+    .result-label {
+      font-size: 0.8rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .result-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .up   { color: #00e676; }
+    .down { color: #ff5252; }
+    .blue { color: #00d2ff; }
+
+    /* Confidence bar */
+    .conf-bar-wrap {
+      background: rgba(255,255,255,0.1);
+      border-radius: 50px;
+      height: 10px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .conf-bar {
+      height: 100%;
+      border-radius: 50px;
+      transition: width 1s ease;
+      background: linear-gradient(90deg, #00d2ff, #7b2ff7);
+    }
+
+    /* Headlines */
+    .headlines-title {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .headline-item {
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid #7b2ff7;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: #ddd;
+      line-height: 1.5;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      color: #666;
+      font-size: 0.8rem;
+      margin-top: 20px;
+      padding: 15px;
+    }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: rgba(255,82,82,0.15);
+      border: 1px solid #ff5252;
+      border-radius: 12px;
+      padding: 15px;
+      color: #ff5252;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    /* Timestamp */
+    .timestamp {
+      text-align: right;
+      color: #555;
+      font-size: 0.75rem;
+      margin-top: 10px;
+    }
+    /* AI Explanation */
+
+.ai-explanation {
+  margin-top: 25px;
+  padding: 20px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.explanation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.explanation-item {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+}
+
+.explanation-item span {
+  display: block;
+  color: #aaa;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.explanation-item strong {
+  font-size: 1rem;
+}
+
+.model-insight {
+  margin-top: 15px;
+  padding: 14px;
+  background: rgba(0,210,255,0.08);
+  border-left: 3px solid #00d2ff;
+  border-radius: 8px;
+  color: #ddd;
+  line-height: 1.5;
+}
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>📈 Stock Sentiment Predictor</h1>
+    <p>Real-time news sentiment + ML model se stock movement predict karo</p>
+  </div>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="select-section">
+      <label>Select Company</label>
+      <select id="company-select">
+        <option value="Apple">Apple (AAPL)</option>
+        <option value="Microsoft">Microsoft (MSFT)</option>
+        <option value="Tesla">Tesla (TSLA)</option>
+        <option value="Google">Google (GOOGL)</option>
+        <option value="Amazon">Amazon (AMZN)</option>
+        <option value="Infosys">Infosys (INFY)</option>
+        <option value="Wipro">Wipro (WIT)</option>
+        <option value="Reliance">Reliance</option>
+      </select>
+      <button class="predict-btn" onclick="predict()">
+        🔮 Predict
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Fetching news & predicting...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- Result -->
+  <div class="result-section card" id="result-section">
+
+    <div class="result-grid">
+
+      <div class="result-item">
+        <div class="result-label">Prediction</div>
+        <div class="result-value" id="prediction">--</div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-label">Confidence</div>
+        <div class="result-value blue" id="confidence">--</div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar" id="conf-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-label">Latest Price</div>
+        <div class="result-value blue" id="latest-price">--</div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-label">Today's Change</div>
+        <div class="result-value" id="price-change">--</div>
+      </div>
+
+    </div>
+
+    <!-- Headlines -->
+    <div class="headlines-title">📰 Latest Headlines</div>
+    <div id="headlines-list"></div>
+    <!-- AI Explanation -->
+<div class="ai-explanation">
+
+  <div class="headlines-title">🧠 WHY THIS PREDICTION?</div>
+
+  <div class="explanation-grid">
+
+    <div class="explanation-item">
+      <span>News Sentiment</span>
+      <strong id="news-sentiment">--</strong>
+    </div>
+
+    <div class="explanation-item">
+      <span>News Impact</span>
+      <strong id="news-impact">--</strong>
+    </div>
+
+    <div class="explanation-item">
+      <span>Market Signal</span>
+      <strong id="market-signal">--</strong>
+    </div>
+
+    <div class="explanation-item">
+      <span>Risk Level</span>
+      <strong id="risk-level">--</strong>
+    </div>
+
+  </div>
+
+  <div class="model-insight" id="model-insight">
+    Model insight will appear here.
+  </div>
+
+</div>
+
+<div id="headlines-list"></div>
+
+<div class="timestamp" id="timestamp"></div>
+    <div class="timestamp" id="timestamp"></div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    ⚠️ Educational purpose only — Real investment ke liye
+    professional advice lo
+  </div>
+
+</div>
+
+<script>
+async function predict() {
+  const company = document.getElementById("company-select").value;
+
+  // Show loading
+  document.getElementById("loading").style.display       = "block";
+  document.getElementById("result-section").style.display= "none";
+  document.getElementById("error-msg").style.display     = "none";
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ company: company })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      showError(data.error);
+      return;
+    }
+
+    // Fill results
+    const predEl = document.getElementById("prediction");
+    predEl.textContent = data.prediction === "UP" ? "📈 UP" : "📉 DOWN";
+    predEl.className   = "result-value " +
+                         (data.prediction === "UP" ? "up" : "down");
+
+    document.getElementById("confidence").textContent =
+        data.confidence + "%";
+    document.getElementById("conf-bar").style.width =
+        data.confidence + "%";
+
+    document.getElementById("latest-price").textContent =
+        "$" + data.latest_price;
+
+    const changeEl = document.getElementById("price-change");
+    changeEl.textContent = (data.price_change > 0 ? "+" : "") +
+                            data.price_change + "%";
+    changeEl.className   = "result-value " +
+                           (data.price_change > 0 ? "up" : "down");
+
+    // Headlines
+    // AI Explanation
+const sentiment = data.sentiment_score;
+
+let sentimentText;
+if (sentiment > 0.05) {
+  sentimentText = "🟢 Positive";
+} else if (sentiment < -0.05) {
+  sentimentText = "🔴 Negative";
+} else {
+  sentimentText = "🟡 Neutral";
+}
+
+document.getElementById("news-sentiment").textContent =
+    sentimentText;
+
+
+// News impact
+let impact;
+
+if (data.news_count >= 15 && Math.abs(sentiment) > 0.05) {
+  impact = "High";
+} else if (data.news_count >= 5) {
+  impact = "Medium";
+} else {
+  impact = "Low";
+}
+
+document.getElementById("news-impact").textContent = impact;
+
+
+// Market signal
+let marketSignal;
+
+if (data.price_change > 0.5) {
+  marketSignal = "🟢 Positive";
+} else if (data.price_change < -0.5) {
+  marketSignal = "🔴 Negative";
+} else {
+  marketSignal = "🟡 Neutral";
+}
+
+document.getElementById("market-signal").textContent =
+    marketSignal;
+
+
+// Risk level
+let risk;
+
+if (data.confidence >= 75) {
+  risk = "🟢 Lower";
+} else if (data.confidence >= 60) {
+  risk = "🟡 Moderate";
+} else {
+  risk = "🔴 Higher";
+}
+
+document.getElementById("risk-level").textContent = risk;
+
+
+// Model explanation
+let insight;
+
+if (data.prediction === "UP" && sentiment > 0) {
+  insight = "Positive news sentiment is supporting the upward prediction.";
+} else if (data.prediction === "DOWN" && sentiment < 0) {
+  insight = "Negative news sentiment is supporting the downward prediction.";
+} else {
+  insight = "News sentiment and recent market movement are giving mixed signals.";
+}
+
+document.getElementById("model-insight").textContent = "💡 " + insight;
+    const hList = document.getElementById("headlines-list");
+    hList.innerHTML = "";
+    data.headlines.forEach(h => {
+      const div       = document.createElement("div");
+      div.className   = "headline-item";
+      div.textContent = h;
+      hList.appendChild(div);
+    });
+
+    document.getElementById("timestamp").textContent =
+        "Last updated: " + data.timestamp;
+
+    // Show result
+    document.getElementById("result-section").style.display = "block";
+
+  } catch (err) {
+    showError("Flask server se connect nahi ho pa raha — " +
+              "python app.py chal raha hai?");
+  } finally {
+    document.getElementById("loading").style.display = "none";
+  }
+}
+
+function showError(msg) {
+  const el       = document.getElementById("error-msg");
+  el.textContent = "❌ " + msg;
+  el.style.display = "block";
+  document.getElementById("loading").style.display = "none";
+}
+</script>
+</body>
+</html>
