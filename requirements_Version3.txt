@@ -1,8 +1,0 @@
-flask
-gunicorn
-numpy
-pandas
-requests
-nltk
-scikit-learn
-yfinance
