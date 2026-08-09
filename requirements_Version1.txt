@@ -1,0 +1,10 @@
+flask
+gunicorn
+pandas
+numpy
+scikit-learn
+nltk
+yfinance
+requests
+matplotlib
+seaborn
