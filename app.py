@@ -4,6 +4,7 @@
 # ============================================================
 
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import pickle
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 import os
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
+CORS(app)
 
 # ── Load all models ──────────────────────────────────────────
 print("Loading models...")
