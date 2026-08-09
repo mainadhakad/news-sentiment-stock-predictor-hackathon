@@ -1,4 +1,5 @@
 # 📈 News Sentiment Stock Predictor
+# Live link :  https://news-sentiment-stock-predictor-hackathon.onrender.com/
 
 ## 🏆 Project Title
 **News Sentiment Stock Predictor for Smarter Market Forecasting**
@@ -20,7 +21,7 @@ We built an AI-powered system that:
 
 This helps users make faster, data-driven decisions by turning unstructured news into actionable stock intelligence.
 
-## 🖥️ PPT Link
+## 🖥️ PPT Link : https://canva.link/dsyed8q7cri1soa
 
 
 ## 🛠️ Technology Stack
