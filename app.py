@@ -51,11 +51,15 @@ def clean_text(text):
     words = [w for w in text.split()
              if w not in stop_words and len(w) > 2]
     return " ".join(words)
-GNEWS_API_KEY = "acb22d2c28635e8c41fd67674434a0ba"  # apni key daalo
-
-def fetch_news(company_name):
+GNEWS_API_KEY = os.environ.get("acb22d2c28635e8c41fd67674434a0ba", "")  # apni key daalo
+                def fetch_news(company_name):
     """GNews API se live news fetch karo"""
     try:
+        # ✅ add this check at top
+        if not GNEWS_API_KEY:
+            print("⚠️ GNEWS_API_KEY missing, using fallback headline")
+            return [f"{company_name} market update"]
+
         url = "https://gnews.io/api/v4/search"
         params = {
             "q":        f"{company_name} stock",
@@ -64,7 +68,7 @@ def fetch_news(company_name):
             "max":      10,
             "apikey":   GNEWS_API_KEY,
         }
-        r    = requests.get(url, params=params, timeout=15)
+        r = requests.get(url, params=params, timeout=15)
         data = r.json()
 
         articles = data.get("articles", [])
