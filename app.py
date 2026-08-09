@@ -51,53 +51,38 @@ def clean_text(text):
     words = [w for w in text.split()
              if w not in stop_words and len(w) > 2]
     return " ".join(words)
+GNEWS_API_KEY = "acb22d2c28635e8c41fd67674434a0ba"  # apni key daalo
+
 def fetch_news(company_name):
-    """Fetch real-time news using GNews API."""
-
+    """GNews API se live news fetch karo"""
     try:
-        api_key = os.environ.get("GNEWS_API_KEY")
-
-        if not api_key:
-            print("⚠️ GNEWS_API_KEY not found")
-            return []
-
         url = "https://gnews.io/api/v4/search"
-
         params = {
-            "q": f'"{company_name}" stock',
-            "lang": "en",
-            "max": 10,
-            "sortby": "publishedAt",
-            "apikey": api_key
+            "q":        f"{company_name} stock",
+            "lang":     "en",
+            "country":  "us",
+            "max":      10,
+            "apikey":   GNEWS_API_KEY,
         }
+        r    = requests.get(url, params=params, timeout=15)
+        data = r.json()
 
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-
-        data = response.json()
+        articles = data.get("articles", [])
+        if not articles:
+            return [f"{company_name} market update — no news found"]
 
         headlines = []
-        seen = set()
-
-        for article in data.get("articles", []):
-            title = article.get("title", "").strip()
-
-            if not title:
-                continue
-
-            key = title.lower()
-
-            if key not in seen:
-                seen.add(key)
+        for a in articles:
+            title = a.get("title", "")
+            if title and title.isascii():
                 headlines.append(title)
 
-        print(f"✅ {len(headlines)} real headlines fetched for {company_name}")
-
-        return headlines[:5]
+        print(f"✅ GNews: {len(headlines)} headlines for {company_name}")
+        return headlines[:5] if headlines else [f"{company_name} market update"]
 
     except Exception as e:
-        print(f"⚠️ News API failed: {e}")
-        return []
+        print(f"❌ GNews error: {e}")
+        return [f"{company_name} market update"]
 def get_stock_data(ticker):
     """yfinance se stock data fetch karo"""
     try:
@@ -262,5 +247,7 @@ def health():
 
 
 # ── Run ──────────────────────────────────────────────────────
+# NAYA
 if __name__ == "__main__":
-   app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
