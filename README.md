@@ -23,6 +23,7 @@ This helps users make faster, data-driven decisions by turning unstructured news
 
 ## 🖥️ PPT Link : https://canva.link/dsyed8q7cri1soa
 ## Demo Video link : https://drive.google.com/file/d/1ySwvpSn0DsZn2AiXb4ISb2HAqsT0-1ww/view?usp=drive_link
+## Documentation link : https://docs.google.com/document/d/1WdqSQX5OdbkDrY-n6ZYvzYoNoklEbEeYzt1ClfQZ-hM/edit?usp=drive_link
 
 
 ## 🛠️ Technology Stack
