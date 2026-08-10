@@ -33,8 +33,8 @@ This helps users make faster, data-driven decisions by turning unstructured news
 - **Deployment:** [Render / Hugging Face / Railway / AWS / etc.]
 
 ## 👨‍💻 Team Members
-1. **[Maina Dhakhad]** 
-2. **[Om singh jadon]**
+1. **Maina Dhakhad** 
+2. **Om singh jadon**
    
 ## ⚙️ Setup Instructions
 
